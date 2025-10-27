@@ -4,6 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 import winston from 'winston';
 import { WinstonModule, utilities } from 'nest-winston';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 const logger = WinstonModule.createLogger({
   levels: winston.config.npm.levels,
@@ -37,6 +38,13 @@ const logger = WinstonModule.createLogger({
   ],
 });
 
+const config = new DocumentBuilder()
+  .setTitle('Book Store')
+  .setDescription('The Book Store API')
+  .setVersion('1.0')
+  .addTag('books')
+  .build();
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { logger });
   app.enableCors();
@@ -48,6 +56,8 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
+  const documentFactory = () => SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/v1', app, documentFactory);
   await app.listen(process.env.PORT ?? 3000);
   logger.log(
     'info',
